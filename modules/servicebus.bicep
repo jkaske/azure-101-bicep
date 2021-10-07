@@ -1,12 +1,23 @@
-// TODO: add a resource of type Microsoft.ServiceBus/namespaces
-//       - use the 'Basic' service tier
+resource namespace 'Microsoft.ServiceBus/namespaces@2021-01-01-preview' = {
+  name: 'sb-${uniqueString(resourceGroup().id)}'
+  location: resourceGroup().location
+  sku: {
+    name: 'Basic'
+    tier: 'Basic'
+  }
+  resource auth 'AuthorizationRules' = {
+    name: 'RootManageSharedAccessKey'
+    properties: {
+      rights: [
+        'Listen'
+        'Manage'
+        'Send'
+      ]
+    }
+  }
+  resource queue 'queues' = {
+    name: 'thumbnailqueue'
+  }
+}
 
-// TODO: add a resource of type Microsoft.ServiceBus/namespaces/AuthorizationRules
-//       - specify 'Manage', 'Listen', 'Send' rights
-
-// TODO: add a resource of type Microsoft.ServiceBus/namespaces/queues
-//       - make sure to give the queue the name that your function app expects
-//         (i.e. if you have hardcoded the name in your function app you need to set the same name for the queue here)
-
-// TODO: add an output for the connection string for the AuthorizationRules resources
-//       - hint: use listKeys() https://docs.microsoft.com/en-us/azure/azure-resource-manager/bicep/bicep-functions-resource#list
+output connectionString string = namespace::auth.listKeys().primaryConnectionString

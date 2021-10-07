@@ -59,8 +59,7 @@ resource enableStaticWebsite 'Microsoft.Resources/deploymentScripts@2020-10-01' 
       }
       {
         name: 'AZURE_STORAGE_KEY'
-        value: storage.listKeys().keys[0].value
-        secureValue: 'true'
+        secureValue: storage.listKeys().keys[0].value
       }
     ]
     arguments: 'index.html'
@@ -69,7 +68,7 @@ resource enableStaticWebsite 'Microsoft.Resources/deploymentScripts@2020-10-01' 
 }
 
 var storageWebEndpoint = storage.properties.primaryEndpoints.web
-var urlMinusTrailingSlash = take(storageWebEndpoint, length(storageWebEndpoint)-1)
+var urlMinusTrailingSlash = take(storageWebEndpoint, length(storageWebEndpoint) - 1)
 
 output storageWebEndpoint string = urlMinusTrailingSlash
 output cdnEndpoint string = 'https://${cdn::endpoint.properties.hostName}'

@@ -26,14 +26,18 @@ module functionApp './modules/function-app.bicep' = {
     // - go through the local.settings.json file in your function app project to see which app settings you need
     // - check ./modules/function-app.bicep to see which app settings are provided automatically for you
     appSettings: [
-      // {
-      //   name: 'EXAMPLE_SETTING_1'
-      //   value: 'example-value-1'
-      // }
-      // {
-      //   name: 'EXAMPLE_SETTING_2'
-      //   value: 'example-value-2'
-      // }
+      {
+        name: 'STORAGE_CONNECTION_STRING'
+        value: storage.outputs.connectionString
+      }
+      {
+        name: 'jenskcosmos_DOCUMENTDB'
+        value: cosmos.outputs.connectionStringAlternative
+      }
+      {
+        name: 'jenskServiceBus_SERVICEBUS'
+        value: servicebus.outputs.connectionString
+      }
     ]
   }
 }

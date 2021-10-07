@@ -1,15 +1,32 @@
-// TODO: add a resource of type Microsoft.Storage/storageAccounts
-//       - make sure to give the storage account the name that your function app expects
-//         i.e. if you have hardcoded the name in your function app you need to set the same name for the account here
-//         note that the name has to be globally unique, so you might have to delete your old account!
+param skuName string = 'Standard_LRS'
 
-// TODO: add a resource of type Microsoft.Storage/storageAccounts/blobServices/containers
-//       - give it a name of 'images'
+var randomString = uniqueString(resourceGroup().id)
 
-// TODO: add a resource of type Microsoft.Storage/storageAccounts/blobServices/containers
-//       - give it a name of 'thumbnails'
+resource storage 'Microsoft.Storage/storageAccounts@2021-04-01' = {
+  name: 'storage${randomString}'
+  location: resourceGroup().location
+  sku: {
+    name: skuName
+  }
+  kind: 'StorageV2'
 
-// TODO: add an output for the connection string of the storage account
-//       - hint: use listKeys() https://docs.microsoft.com/en-us/azure/azure-resource-manager/bicep/bicep-functions-resource#list
-//       - a connection string has the following format
-//         'DefaultEndpointsProtocol=https;AccountName=<ACCOUNT NAME>;AccountKey=<ACCOUNT KEY>;EndpointSuffix=core.windows.net'
+  resource blobService 'blobServices' = {
+    name: 'default'
+    resource imageContainer 'containers' = {
+      name: 'images'
+      properties: {
+        publicAccess: 'Blob'
+      }
+    }
+    resource thumbnailContainer 'containers' = {
+      name: 'thumbnails'
+      properties: {
+        publicAccess: 'Blob'
+      }
+    }
+  }
+}
+
+var endpointSuffix = environment().suffixes.storage
+output storageAccountName string = storage.name
+output connectionString string = 'DefaultEndpointsProtocol=https;AccountName=${storage.name};AccountKey=${storage.listKeys().keys[0].value};EndpointSuffix=${endpointSuffix}'

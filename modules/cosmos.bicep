@@ -1,4 +1,8 @@
-resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2021-06-15' = {
+param databaseName string = 'imagesDB'
+param imagesContainerName string = 'images'
+param thumbnailContainerName string = 'thumbnails'
+
+resource account 'Microsoft.DocumentDB/databaseAccounts@2021-06-15' = {
   name: 'cosmos-${uniqueString(resourceGroup().id)}'
   location: resourceGroup().location
   properties: {
@@ -16,7 +20,45 @@ resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2021-06-15' = {
       }
     ]
   }
+  resource database 'sqlDatabases' = {
+    name: databaseName
+    properties: {
+      resource: {
+        id: databaseName
+      }
+    }
+    resource containerImages 'containers' = {
+      name: imagesContainerName
+      properties: {
+        resource: {
+          id: imagesContainerName
+          partitionKey: {
+            kind: 'Hash'
+            paths: [
+              '/id'
+            ]
+          }
+        }
+      }
+    }
+    resource containerThumbnails 'containers' = {
+      name: thumbnailContainerName
+      properties: {
+        resource: {
+          id: thumbnailContainerName
+          partitionKey: {
+            kind: 'Hash'
+            paths: [
+              '/id'
+            ]
+          }
+        }
+      }
+    }
+  }
 }
+
+output connectionStringAlternative string = account.listConnectionStrings().connectionStrings[0].connectionString
 
 // TODO: add a resource of type Microsoft.DocumentDB/databaseAccounts/sqlDatabases
 //       - make sure to give the database the name that your function app expects
